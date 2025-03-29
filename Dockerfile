@@ -1,18 +1,26 @@
 ##############################
 # Stage 1: Builder
 ##############################
-FROM php:8.3-cli-alpine AS builder
+FROM php:8.3-cli AS builder
 
-# Install build dependencies on Alpine
-RUN apk update && \
-    apk add --no-cache \
+# (Optional) Adjust Debian sources for Debian 9 if needed.
+RUN if [ "$(grep '^VERSION_ID=' /etc/os-release | cut -d '=' -f 2 | tr -d '"')" -eq "9" ]; then \
+      sed -i -e 's/deb.debian.org/archive.debian.org/g' \
+             -e 's/security.debian.org/archive.debian.org/g' \
+             -e '/stretch-updates/d' /etc/apt/sources.list; \
+    fi
+
+# Install build dependencies
+RUN apt-get update -q && \
+    apt-get install -qq -y \
       curl \
       git \
       libzip-dev \
-      libjpeg-turbo-dev \
+      libjpeg62-turbo-dev \
       libpng-dev \
-      freetype-dev \
-      unzip
+      libfreetype6-dev \
+      unzip && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Download docker-php-extension-installer and make it executable
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
@@ -62,7 +70,7 @@ RUN git clone https://github.com/chillerlan/php-qrcode.git && \
 
 # Copy your application source code (assumed to be in ./src relative to the Dockerfile)
 WORKDIR /var/www/html
-COPY ./src ./
+COPY ./src ./ 
 RUN composer update --no-dev --optimize-autoloader
 
 # Ensure proper permissions for application files
@@ -71,18 +79,17 @@ RUN chmod -R 755 /var/www/html
 ##############################
 # Stage 2: Final Runtime Image
 ##############################
-FROM php:8.3-cli-alpine
+FROM php:8.3-cli
 
-# Install runtime dependencies on Alpine (including linux-headers for sockets)
-RUN apk update && \
-    apk add --no-cache \
+# Install runtime dependencies and required libraries.
+RUN apt-get update -q && \
+    apt-get install -qq -y \
       libzip-dev \
-      libjpeg-turbo-dev \
+      libjpeg62-turbo-dev \
       libpng-dev \
-      freetype-dev \
-      unzip \
-      linux-headers && \
-    rm -rf /var/cache/apk/*
+      libfreetype6-dev \
+      unzip && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install only the PHP extensions needed at runtime.
 RUN docker-php-ext-install \
