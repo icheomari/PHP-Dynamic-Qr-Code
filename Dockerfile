@@ -1,26 +1,18 @@
 ##############################
 # Stage 1: Builder
 ##############################
-FROM php:8.3-cli AS builder
+FROM php:8.3-cli-alpine AS builder
 
-# (Optional) Adjust Debian sources for Debian 9 if needed.
-RUN if [ "$(grep '^VERSION_ID=' /etc/os-release | cut -d '=' -f 2 | tr -d '"')" -eq "9" ]; then \
-      sed -i -e 's/deb.debian.org/archive.debian.org/g' \
-             -e 's/security.debian.org/archive.debian.org/g' \
-             -e '/stretch-updates/d' /etc/apt/sources.list; \
-    fi
-
-# Install build dependencies
-RUN apt-get update -q && \
-    apt-get install -qq -y \
+# Install build dependencies on Alpine
+RUN apk update && \
+    apk add --no-cache \
       curl \
       git \
       libzip-dev \
-      libjpeg62-turbo-dev \
+      libjpeg-turbo-dev \
       libpng-dev \
-      libfreetype6-dev \
-      unzip && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+      freetype-dev \
+      unzip
 
 # Download docker-php-extension-installer and make it executable
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
@@ -79,17 +71,17 @@ RUN chmod -R 755 /var/www/html
 ##############################
 # Stage 2: Final Runtime Image
 ##############################
-FROM php:8.3-cli
+FROM php:8.3-cli-alpine
 
-# Install runtime dependencies and required libraries.
-RUN apt-get update -q && \
-    apt-get install -qq -y \
+# Install runtime dependencies on Alpine
+RUN apk update && \
+    apk add --no-cache \
       libzip-dev \
-      libjpeg62-turbo-dev \
+      libjpeg-turbo-dev \
       libpng-dev \
-      libfreetype6-dev \
+      freetype-dev \
       unzip && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    rm -rf /var/cache/apk/*
 
 # Install only the PHP extensions needed at runtime.
 RUN docker-php-ext-install \
