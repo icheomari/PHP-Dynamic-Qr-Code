@@ -73,14 +73,15 @@ RUN chmod -R 755 /var/www/html
 ##############################
 FROM php:8.3-cli-alpine
 
-# Install runtime dependencies on Alpine
+# Install runtime dependencies on Alpine, including gettext-dev for libintl.h
 RUN apk update && \
     apk add --no-cache \
       libzip-dev \
       libjpeg-turbo-dev \
       libpng-dev \
       freetype-dev \
-      unzip && \
+      unzip \
+      gettext-dev && \
     rm -rf /var/cache/apk/*
 
 # Install only the PHP extensions needed at runtime.
