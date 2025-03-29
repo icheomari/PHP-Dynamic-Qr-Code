@@ -3,8 +3,7 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - main  # Adjust this to your default branch
-  workflow_dispatch:  # Enables manual triggering from the Actions tab
+      - main  # or whichever branch you want to build from
 
 jobs:
   build:
@@ -21,4 +20,3 @@ jobs:
 
       - name: Push the Docker Image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/dynamic-qr-code:latest
-
