@@ -1,3 +1,21 @@
-# Exclude specific directories
+# Exclude version control directories
+.git
+.gitignore
+
+# Exclude IDE and editor configuration files
+.idea
+.vscode
+.DS_Store
+
+# Exclude local project config files (if not needed for the build)
+.settings
+.project
+
+# Exclude specific application directories that are not needed
 src/install/
 src/upgrade/
+
+# (Optional) Exclude other temporary or build artifacts
+tmp/
+cache/
+node_modules/
