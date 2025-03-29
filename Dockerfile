@@ -62,7 +62,7 @@ RUN git clone https://github.com/chillerlan/php-qrcode.git && \
 
 # Copy your application source code (assumed to be in ./src relative to the Dockerfile)
 WORKDIR /var/www/html
-COPY ./src ./ 
+COPY ./src ./
 RUN composer update --no-dev --optimize-autoloader
 
 # Ensure proper permissions for application files
@@ -73,7 +73,7 @@ RUN chmod -R 755 /var/www/html
 ##############################
 FROM php:8.3-cli-alpine
 
-# Install runtime dependencies on Alpine, including gettext-dev for libintl.h
+# Install runtime dependencies on Alpine (including linux-headers for sockets)
 RUN apk update && \
     apk add --no-cache \
       libzip-dev \
@@ -81,7 +81,7 @@ RUN apk update && \
       libpng-dev \
       freetype-dev \
       unzip \
-      gettext-dev && \
+      linux-headers && \
     rm -rf /var/cache/apk/*
 
 # Install only the PHP extensions needed at runtime.
